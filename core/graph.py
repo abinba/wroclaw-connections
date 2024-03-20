@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 from config import CONSTRUCTED_GRAPH_FILE
-from station import Station
+from core.station import Station
 
 
 class GraphManager:
@@ -23,6 +23,15 @@ class GraphManager:
                     location={
                         "lat": row["start_stop_lat"],
                         "lon": row["start_stop_lon"],
+                    },
+                )
+
+            if end not in graph:
+                graph[end] = Station(
+                    name=end,
+                    location={
+                        "lat": row["end_stop_lat"],
+                        "lon": row["end_stop_lon"],
                     },
                 )
 

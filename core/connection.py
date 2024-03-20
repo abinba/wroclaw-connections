@@ -19,3 +19,12 @@ class Connection:
 
     def __str__(self):
         return f"{self.line_company} ({self.departure_time_minutes} -> {self.arrival_time_minutes})"
+
+    def __eq__(self, other):
+        return (
+            self.line == other.line
+            and self.company == other.company
+            and self.departure_time_minutes == other.departure_time_minutes
+            and self.arrival_time_minutes == other.arrival_time_minutes
+            and self.travel_time_minutes == other.travel_time_minutes
+        )
