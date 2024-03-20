@@ -1,0 +1,21 @@
+[flake8]
+max-line-length = 120
+extend-ignore = E203, W503, E501, E741, E711, E712, F811
+
+exclude =
+    .git
+    __pycache__
+    setup.py
+    build
+    dist
+    releases
+    env
+    venv
+    .venv
+    .tox
+    .mypy_cache
+    .pytest_cache
+    .vscode
+    .github
+    poetry/utils/_compat.py
+    .idea
