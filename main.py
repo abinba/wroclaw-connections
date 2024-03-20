@@ -6,7 +6,7 @@ from algorithms import djikstra, astar
 from algorithms.djikstra import OptimizationCriteria
 from config import CONNECTION_GRAPH_FILE
 from core.graph import GraphManager
-from core.utils import time_to_minutes, minutes_to_time, format_path
+from core.utils import time_to_minutes, format_path
 
 
 def get_df() -> pd.DataFrame:
@@ -57,29 +57,30 @@ if __name__ == "__main__":
         print("Graph loaded!")
 
     # Dijkstra's algorithm
-    print("\nDijkstra's algorithm")
+    print("\nDijkstra's algorithm time optimization")
     s = time.time()
     travel_time, path = djikstra.shortest_path(
         graph=graph,
         start_station="BISKUPIN",
-        end_station="KRZYKI",
-        start_time=800,
-        optimization=OptimizationCriteria.TIME.value,
+        end_station="OPORÓW",
+        start_time=808,
     )
     print(f"Execution time: {time.time() - s:.4f} seconds")
     print(travel_time)
-    print(format_path(path))
+    print(path)
+    print("\n".join(format_path(path)))
 
     # A* algorithm
-    print("\nA* algorithm optimized for transfer")
+    print("\nA* algorithm")
     s = time.time()
-    transfers, path = astar.shortest_path(
+    cost, path = astar.shortest_path(
         graph=graph,
         start_station="BISKUPIN",
-        end_station="KRZYKI",
-        start_time=800,
-        optimization=OptimizationCriteria.TIME.value,
+        end_station="OPORÓW",
+        start_time=797,
+        optimization_criteria=OptimizationCriteria.TRANSFER.value,
     )
     print(f"Execution time: {time.time() - s:.4f} seconds")
-    print(transfers)
-    print(format_path(path))
+    print(cost)
+    print(path)
+    print("\n".join(format_path(path)))

@@ -14,16 +14,24 @@ def shortest_path(
     start_station: str,
     end_station: str,
     start_time: float,
-    optimization: OptimizationCriteria = OptimizationCriteria.TIME.value,  # "time" | "transfer"
 ):
     pq = PriorityQueue()
 
-    pq.put((0, start_station, None, start_time, [(start_station, start_time, "")]))
+    pq.put(
+        (0, start_time, start_station, None, start_time, [(start_station, start_time)])
+    )
 
     visited = set()
 
     while not pq.empty():
-        optimization_cost, current_station, previous_line_company, current_time, path = pq.get()
+        (
+            optimization_cost,
+            _,
+            current_station,
+            previous_line_company,
+            current_time,
+            path,
+        ) = pq.get()
 
         if current_station in visited:
             continue
@@ -51,27 +59,23 @@ def shortest_path(
                     continue
 
                 for connection in connections:
-                    if optimization == OptimizationCriteria.TRANSFER.value:
-                        if (
-                            previous_line_company is not None and  # if it's not the first station
-                            connection.line_company != previous_line_company
-                        ):
-                            new_cost = optimization_cost + 1
-                        else:
-                            new_cost = optimization_cost
-                    else:
-                        waiting_time = connection.departure_time_minutes - current_time
-                        new_cost = (
-                            optimization_cost + waiting_time + connection.travel_time_minutes
-                        )
+                    waiting_time = connection.departure_time_minutes - current_time
+                    new_cost = (
+                        optimization_cost
+                        + waiting_time
+                        + connection.travel_time_minutes
+                    )
 
                     pq.put(
                         (
                             new_cost,
+                            connection.departure_time_minutes,
                             next_station,
                             connection.line_company,
                             connection.arrival_time_minutes,
-                            path + [(next_station, connection.arrival_time_minutes, connection.line_company)]
+                            path
+                            + [connection.line_company]
+                            + [(next_station, connection.arrival_time_minutes)],
                         )
                     )
     return 0, []

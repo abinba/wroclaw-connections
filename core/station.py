@@ -1,6 +1,4 @@
 from collections import defaultdict
-from queue import PriorityQueue
-from typing import Optional
 
 from config import MIN_TRANSFER_TIME, NEXT_CONNECTIONS_LIMIT
 from core.connection import Connection
@@ -71,23 +69,24 @@ class Station:
         suitable_connections = []
         for i in range(
             target_position,
-            min(target_position + NEXT_CONNECTIONS_LIMIT, len(connections_to_next_station) - 1),
+            min(
+                target_position + NEXT_CONNECTIONS_LIMIT,
+                len(connections_to_next_station) - 1,
+            ),
         ):
             # Prioritize connections with the same line as the previous one
-            # if (
-            #     previous_line_company
-            #     and connections_to_next_station[i].line_company == previous_line_company
-            # ):
-            #     return connections_to_next_station[i]
-            # else:
-            #     # If the connection is too close to the current time, skip it
-            if previous_line_company and connections_to_next_station[i].line_company != previous_line_company:
+            if (
+                previous_line_company
+                and connections_to_next_station[i].line_company != previous_line_company
+            ):
                 if (
                     connections_to_next_station[i].departure_time_minutes - current_time
                     < MIN_TRANSFER_TIME
                 ):
                     continue
-            suitable_connections.append(connections_to_next_station[i])
+
+            if connections_to_next_station[i] not in suitable_connections:
+                suitable_connections.append(connections_to_next_station[i])
 
         return suitable_connections
 
