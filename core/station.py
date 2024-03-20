@@ -1,8 +1,9 @@
 from collections import defaultdict
+from queue import PriorityQueue
 from typing import Optional
 
-from config import MIN_TRANSFER_TIME
-from connection import Connection
+from config import MIN_TRANSFER_TIME, NEXT_CONNECTIONS_LIMIT
+from core.connection import Connection
 
 
 class Station:
@@ -39,12 +40,12 @@ class Station:
         for station in self.connections:
             self.connections[station].sort(key=lambda x: x.departure_time_minutes)
 
-    def find_connection(
+    def find_connections(
         self,
         next_station: str,
         current_time: float,
         previous_line_company: str = None,
-    ) -> Optional[Connection]:
+    ) -> list[Connection]:
         """
         Find the next connection to the next station from the current station.
         Uses binary search within departure times of available connections to find the next connection.
@@ -70,16 +71,17 @@ class Station:
         suitable_connections = []
         for i in range(
             target_position,
-            min(target_position + 10, len(connections_to_next_station) - 1),
+            min(target_position + NEXT_CONNECTIONS_LIMIT, len(connections_to_next_station) - 1),
         ):
             # Prioritize connections with the same line as the previous one
-            if (
-                previous_line_company
-                and connections_to_next_station[i].line_company == previous_line_company
-            ):
-                return connections_to_next_station[i]
-            else:
-                # If the connection is too close to the current time, skip it
+            # if (
+            #     previous_line_company
+            #     and connections_to_next_station[i].line_company == previous_line_company
+            # ):
+            #     return connections_to_next_station[i]
+            # else:
+            #     # If the connection is too close to the current time, skip it
+            if previous_line_company and connections_to_next_station[i].line_company != previous_line_company:
                 if (
                     connections_to_next_station[i].departure_time_minutes - current_time
                     < MIN_TRANSFER_TIME
@@ -87,10 +89,7 @@ class Station:
                     continue
             suitable_connections.append(connections_to_next_station[i])
 
-        if suitable_connections:
-            return suitable_connections[0]
-
-        return None
+        return suitable_connections
 
     def as_dict(self):
         return {

@@ -1,12 +1,19 @@
-from enum import Enum
+import math
+from functools import lru_cache
 from queue import PriorityQueue
 
 from core.station import Station
+from core.utils import OptimizationCriteria
 
 
-class OptimizationCriteria(Enum):
-    TIME = "time"
-    TRANSFER = "transfer"
+@lru_cache(maxsize=None)
+def euclidean_distance(
+    lat1: float, lon1: float, lat2: float, lon2: float
+) -> float:
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    lat_dist = (lat2 - lat1) * 111139
+    lon_dist = (lon2 - lon1) * 111139 * math.cos((lat1 + lat2) / 2)
+    return math.sqrt(lat_dist**2 + lon_dist**2)
 
 
 def shortest_path(
@@ -17,13 +24,20 @@ def shortest_path(
     optimization: OptimizationCriteria = OptimizationCriteria.TIME.value,  # "time" | "transfer"
 ):
     pq = PriorityQueue()
-
-    pq.put((0, start_station, None, start_time, [(start_station, start_time, "")]))
+    starting_estimated_cost = euclidean_distance(
+        graph[start_station].location["lat"],
+        graph[start_station].location["lon"],
+        graph[end_station].location["lat"],
+        graph[end_station].location["lon"],
+    )
+    pq.put((starting_estimated_cost, 0, start_station, None, start_time, [(start_station, start_time, "")]))
 
     visited = set()
 
     while not pq.empty():
-        optimization_cost, current_station, previous_line_company, current_time, path = pq.get()
+        (
+            estimated_total_cost, optimization_cost, current_station, previous_line_company, current_time, path
+        ) = pq.get()
 
         if current_station in visited:
             continue
@@ -67,6 +81,12 @@ def shortest_path(
 
                     pq.put(
                         (
+                            new_cost + euclidean_distance(
+                                graph[next_station].location["lat"],
+                                graph[next_station].location["lon"],
+                                graph[end_station].location["lat"],
+                                graph[end_station].location["lon"],
+                            ),
                             new_cost,
                             next_station,
                             connection.line_company,
